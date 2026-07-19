@@ -20,6 +20,7 @@ def listen_for_halt():
     con, adr = server.accept() #wait until someone connects
     con.close() #someone connected
     subprocess.run(notify_halt)
+    subprocess.run(["pkill", "nc"]) #memory leak fix
     os._exit(0) #stop the main process
 
 def rand():
