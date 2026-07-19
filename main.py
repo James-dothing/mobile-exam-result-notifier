@@ -6,6 +6,8 @@ import socket
 import threading
 import os
 
+website = "https://www.bodin2.ac.th/test_24/data/files.json" #REPLACE THIS WITH API THAT GIVES DIFFRENT RESPOND WHEN THE EXAM RESULT IS OUT
+
 old = open("oldfile.txt", "r").read()
 notify_score = ["termux-notification",  "--title", "TEST SCORE IS OUT", "--content", "TEST SCORE IS OUT", "--priority", "max", "--sound", "--action", "nc 127.0.0.1 7000"]
 notify_halt = ["termux-notification", "--title", "IT HAS BEEN DONE", "--content", "IT HAS BEEN DONE", "--priority", "max", "--sound"]
@@ -26,7 +28,6 @@ def debug(status, time):
     return ["termux-notification", "--title", str(status), "--content", time, "--priority", "max", "--sound"]
 
 while True:
-    website = "https://www.bodin2.ac.th/test_24/data/files.json"
     answer = requests.get(website)
     if answer.status_code == 200:
         if old == answer.content.decode("utf-8"):
