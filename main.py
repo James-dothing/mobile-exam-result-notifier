@@ -29,21 +29,29 @@ def debug(status, time):
     return ["termux-notification", "--title", str(status), "--content", time, "--priority", "max", "--sound"]
 
 while True:
-    answer = requests.get(website)
-    if answer.status_code == 200:
-        if old == answer.content.decode("utf-8"):
-            print("OK: " + time.ctime())
+    try: # 104 connection reset by peer (7/20/26)
+        answer = requests.get(website)
+        if answer.status_code == 200:
+            if old == answer.content.decode("utf-8"):
+                print("OK: " + time.ctime())
+            else:
+                print(time.ctime() + " found it\n" + answer.content.decode("utf-8"))
+                open("oldfile.txt", "w").write(answer.content.decode("utf-8"))
+                threading.Thread(target=listen_for_halt, daemon=True).start()
+                d = 0
+                while d <= 50:
+                    d += 1
+                    subprocess.Popen(notify_score)
+                    subprocess.Popen(["termux-vibrate", "-d", "1000"])
+                    time.sleep(5)
+                break
         else:
-            print(time.ctime() + " found it\n" + answer.content.decode("utf-8"))
-            open("oldfile.txt", "w").write(answer.content.decode("utf-8"))
-            threading.Thread(target=listen_for_halt, daemon=True).start()
-            d = 0
-            while d <= 50:
-                d += 1
-                subprocess.Popen(notify_score)
-                subprocess.Popen(["termux-vibrate", "-d", "1000"])
-                time.sleep(5)
-    else:
-        open("error_log.txt", "a").write(f"[{time.ctime()}] | {answer.status_code} | {answer.content.decode('utf-8')}\n")
-        subprocess.Popen(debug(answer.status_code, time.ctime()))
+            open("error_log.txt", "a").write(f"[{time.ctime()}] | {answer.status_code} | {answer.content.decode('utf-8')}\n")
+            subprocess.Popen(debug(answer.status_code, time.ctime()))
+            time.sleep(300)
+    except Exception as e:
+        open("error_log.txt", "a").write(f"[{time.ctime()}]: {e}\n")
+        subprocess.Popen(debug(999, time.ctime()))
+        time.sleep(300)
+
     time.sleep(min(rand(), rand(), rand())) #low bias shenanigan
